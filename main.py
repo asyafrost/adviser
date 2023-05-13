@@ -167,7 +167,7 @@ if __name__ == '__main__':
     # Run bot
     updater.run_polling(1.0)
     '''
-    application = Application.builder().token("6066480941:AAHHJxBXlpLxc2RUFphoyS7KugmBnfpn_7c").build()
+    application = Application.builder().token("TOKEN").build()
 
     
 
