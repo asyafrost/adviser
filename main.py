@@ -7,6 +7,7 @@ import time
 import logging
 from asgiref.sync import sync_to_async
 import create_bd 
+import work_bd
 
 
 
@@ -31,7 +32,7 @@ async def user_name(update, context):
         name = update.message.text.strip()
         people_id = update.message.chat.id
 
-        create_bd.add_user(people_id, name)
+        work_bd.add_user(people_id, name)
         #context.user_data["name"] = name
         await context.bot.register_next_step_handler(context, choose_type)
 
@@ -43,7 +44,7 @@ async def user_name(update, context):
 async def choose_type(update, context):
 
     people_id = update.message.chat.id
-    name = create_bd.get_name(people_id)
+    name = work_bd.get_name(people_id)
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Привет, {name}! Я могу помочь тебе выбрать книгу, сериал или фильм. Что тебе больше всего нравится?")
     
@@ -73,22 +74,25 @@ def choose_genre(update, context):
 def choose_age(update, context):
     user_age = update.message.text
     context.user_data["age"] = user_age
-    # Поиск рекомендаций в базе данных
-    conn = sqlite3.connect("adviser_bd.db")
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM {context.user_data['type']} WHERE genre='{context.user_data['genre']}' AND age<={context.user_data['age']} ORDER BY RAND() LIMIT 5")
-    results = cursor.fetchall()
+    
+def find(update, context):
+    Type = context.user_data['type']
+    Age = context.user_data["age"]
+    Genre = context.user_data['genre']
+    results = work_bd.find_rec(Type, Genre, Age)
     if len(results) == 0:
         context.bot.send_message(chat_id=update.effective_chat.id, text="К сожалению, я не могу найти подходящих рекомендаций.")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Я нашел для тебя следующие рекомендации:")
+        message = "<b>Я нашел для тебя следующие рекомендации:</b>\n\n"
+        message += "<table>"
+        message += "<tr><th>Обложка</th><th>Название</th><th>Дата выхода</th><th>Описание</th></tr>"
         for result in results:
-            context.bot.send_message(chat_id=update.effective_chat.id, text=result[1])
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Поставьте оценку этому элементу (от 1 до 5):")
-            rating = update.message.text
-            cursor.execute(f"INSERT INTO ratings (item_id, user_id, rating) VALUES ({result[0]}, {update.effective_user.id}, {rating})")
-    conn.commit()
-    conn.close()
+            message += f"<tr><td>{result[5]}</td><td>{result[2]}</td><td>{result[6]}</td><td>{result[7]}</td></tr>"
+        message += "</table>"
+        context.bot.send_message(chat_id=update.effective_chat.id, text=message, parse_mode="HTML")
+    
+            
+    
     return ConversationHandler.END
 
 
@@ -99,19 +103,7 @@ def rate_item(update, context):
     item_id = context.user_data["id"]
     rating = update.message.text
     # Insert rating into database
-    conn = sqlite3.connect("adviser_bd.db")
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS ratings (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        item_id INTEGER NOT NULL,
-                        user_id INTEGER NOT NULL,
-                        rating INTEGER NOT NULL,
-                        FOREIGN KEY (item_id) REFERENCES items (id),
-                        FOREIGN KEY (user_id) REFERENCES users (id))''')
-
-    cursor.execute(f"INSERT INTO {item_type}_ratings (id, rating) VALUES (?, ?)", (item_id, rating))
-    conn.commit()
-    conn.close()
+    work_bd.add_rating(item_type, item_id, rating)
     # Send confirmation message to user
     context.bot.send_message(chat_id=update.effective_chat.id, text="Спасибо за вашу оценку!")
     return ConversationHandler.END
@@ -130,7 +122,7 @@ def calculate_average_ratings():
 
 
 # Создание объекта для работы с ботом
-updater = Updater("6066480941:AAHHJxBXlpLxc2RUFphoyS7KugmBnfpn_7c", update_queue=None)
+updater = Updater("6066480941:AAHckq5Cbbz0liT3HhFUIDZOv3GvP38sPBY", update_queue=None)
 
 # Создание обработчиков команд бота
 def fallback(update, context):
