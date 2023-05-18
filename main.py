@@ -6,8 +6,7 @@ import tracemalloc
 import time
 import logging
 from asgiref.sync import sync_to_async
-import create_bd 
-import work_bd
+import create_bd, Token, work_bd
 
 
 
@@ -122,7 +121,7 @@ def calculate_average_ratings():
 
 
 # Создание объекта для работы с ботом
-updater = Updater("6066480941:AAHckq5Cbbz0liT3HhFUIDZOv3GvP38sPBY", update_queue=None)
+updater = Updater(Token.token_bot, update_queue=None)
 
 # Создание обработчиков команд бота
 def fallback(update, context):
