@@ -1,4 +1,5 @@
 import sqlite3
+import mysql.connector
 import asyncio
 from telegram.ext import *
 from telegram.ext import filters
@@ -6,8 +7,8 @@ import tracemalloc
 import time
 import logging
 from asgiref.sync import sync_to_async
-import create_bd, Token, work_bd
-
+import create_bd, work_bd
+from ignore.Token import BOT_TOKEN
 
 
 
@@ -121,7 +122,7 @@ def calculate_average_ratings():
 
 
 # Создание объекта для работы с ботом
-updater = Updater(Token.token_bot, update_queue=None)
+updater = Updater(BOT_TOKEN, update_queue=None)
 
 # Создание обработчиков команд бота
 def fallback(update, context):
@@ -158,7 +159,7 @@ if __name__ == '__main__':
     # Run bot
     updater.run_polling(1.0)
     '''
-    application = Application.builder().token("6066480941:AAHHJxBXlpLxc2RUFphoyS7KugmBnfpn_7c").build()
+    application = Application.builder().token(BOT_TOKEN).build()
 
     
 
