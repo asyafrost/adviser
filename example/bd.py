@@ -4,7 +4,7 @@ import sqlite3
 import asyncio
 
 #bot 
-bot = AsyncTeleBot("6066480941:AAHHJxBXlpLxc2RUFphoyS7KugmBnfpn_7c")
+bot = AsyncTeleBot("TOKEN")
 
 connect = sqlite3.connect('adviser.db')
 cursor = connect.cursor()

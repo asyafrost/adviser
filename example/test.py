@@ -53,7 +53,7 @@ def choose_age(update, context):
 
 
 def main():
-    updater = Updater(token='6066480941:AAHHJxBXlpLxc2RUFphoyS7KugmBnfpn_7c', use_context=True)
+    updater = Updater(token='TOKEN', use_context=True)
     dispatcher = updater.dispatcher
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
