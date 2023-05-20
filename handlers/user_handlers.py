@@ -3,7 +3,7 @@ from aiogram.filters import Command, CommandStart, Text
 from aiogram.types import Message, CallbackQuery
 from keyboards.keyboards import *
 from lexicon.lexicon_ru import LEXICON_RU
-from services.services import get_bot_choice, get_winner
+
 
 router: Router = Router()
 
@@ -22,16 +22,27 @@ async def process_help_command(message: Message):
     await message.answer(text=LEXICON_RU['/help'], reply_markup=button_menu)
 
 
+
+# Этот хэндлер срабатывает на кнопку "Поздороваться"
+@router.message(Text(text=LEXICON_RU['hello_button']))
+async def process_help_command(message: Message):
+    await message.answer(text=LEXICON_RU['hello_name'], reply_markup=button_menu)
+
+
 # Этот хэндлер срабатывает на согласие пользователя пройти анкету
 @router.message(Text(text=LEXICON_RU['yes_button']))
 async def process_yes_answer(message: Message):
     await message.answer(text=LEXICON_RU['yes'], reply_markup=type_kb)
 
 
-# Этот хэндлер срабатывает на отказ пользователя играть в игру
+# Этот хэндлер срабатывает на отказ пользователя пройти анкету
 @router.message(Text(text=LEXICON_RU['no_button']))
 async def process_no_answer(message: Message):
     await message.answer(text=LEXICON_RU['no'])
+
+
+
+
 
 
 # Этот хэндлер будет срабатывать на апдейт типа CallbackQuery

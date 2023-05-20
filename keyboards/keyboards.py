@@ -79,8 +79,8 @@ yes_no_choice = yes_no_choice_builder.as_markup(
 # ------- Создаем игровую клавиатуру без использования билдера -------
 
 # Создаем кнопки клавиатуры типов
-button_book: KeyboardButton = KeyboardButton(text=LEXICON_RU['books'])
-button_film: KeyboardButton = KeyboardButton(text=LEXICON_RU['films'])
+button_book: KeyboardButton = KeyboardButton(text=LEXICON_RU['book'])
+button_film: KeyboardButton = KeyboardButton(text=LEXICON_RU['film'])
 button_tv_show: KeyboardButton = KeyboardButton(text=LEXICON_RU['tv_show'])
 
 # Создаем клавиатуру типов

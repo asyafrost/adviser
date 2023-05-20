@@ -7,9 +7,10 @@ from lexicon.lexicon_ru import LEXICON_RU
 # ------- ЧУЖАЯ ЛОГИКА, ИЗМЕНИТЬ!!!!! -------
 
 
-# Функция, возвращающая случайный выбор бота в игре
-def get_bot_choice() -> str:
-    return random.choice(['rock', 'paper', 'scissors'])
+# Функция, возвращающая случайный выбор бота в игре ->
+# Функция, 
+#def get_bot_choice() -> str:
+   # return random.choice(['rock', 'paper', 'scissors'])
 
 
 # Функция, возвращающая ключ из словаря, по которому
@@ -22,6 +23,7 @@ def _normalize_user_answer(user_answer: str) -> str:
 
 
 # Функция, определяющая победителя
+'''
 def get_winner(user_choice: str, bot_choice: str) -> str:
     user_choice = _normalize_user_answer(user_choice)
     rules: dict[str, str] = {'rock': 'scissors',
@@ -33,3 +35,5 @@ def get_winner(user_choice: str, bot_choice: str) -> str:
         return 'user_won'
     else:
         return 'bot_won'
+        
+    '''

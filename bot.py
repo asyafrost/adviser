@@ -1,10 +1,10 @@
 import asyncio
 import logging
-import mysql.connector
+import pymysql
 from aiogram import types
-from aiogram.types import ParseMode
-from aiogram.utils import executor
-from database import display_random_movie
+#from aiogram.types import ParseMode
+#from aiogram.utils import executor
+from database import database
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
 from handlers import other_handlers, user_handlers
@@ -16,12 +16,14 @@ async def main():
     # Загружаем конфиг в переменную config
     config: Config = load_config("D:/Programms/XAMPP/htdocs/adviser/config_data/.env")
 
-    connection = mysql.connector.connect(
+    connection = pymysql.connect(
        host=config.db.db_host,
        user=config.db.db_user,
        password=config.db.db_password,
        database=config.db.database,
-       port=int(config.db.db_port)
+       port=config.db.db_port,
+       charset='utf8mb4',
+       cursorclass=pymysql.cursors.DictCursor
    )
 
     cursor = connection.cursor()
@@ -48,7 +50,7 @@ async def main():
     # Регистриуем роутеры в диспетчере
     dp.include_router(user_handlers.router)
     dp.include_router(other_handlers.router)
-    dp.include_router(display_random_movie.router)
+    dp.include_router(database.router)
 
 
     # Настраиваем кнопку Menu

@@ -1,4 +1,4 @@
-import mysql
+import pymysql
 from aiogram import Router
 from aiogram import Bot, Dispatcher
 import time
@@ -15,9 +15,14 @@ router: Router = Router()
 bot: Bot = Bot(token=config.tg_bot.token)
 dp: Dispatcher = Dispatcher()
 
-def connection(config: Config) -> mysql.connect:
-    return mysql.connect(host=config.db.db_host, user=config.db.db_user,
-                           passwd=config.db.db_password, database=config.db.database, port=int(config.database.port))
+def connection(config: Config) -> pymysql.connect:
+    return pymysql.connect(host=config.db.db_host, 
+                           user=config.db.db_user,
+                           passwd=config.db.db_password, 
+                           database=config.db.database, 
+                           port=int(config.database.port),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
 
 
 def addUser(msg: Message) -> bool:
