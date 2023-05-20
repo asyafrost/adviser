@@ -1,1 +1,4 @@
 /adviser
+/ignore
+Token.py
+.env.txt
