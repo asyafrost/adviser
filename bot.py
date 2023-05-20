@@ -52,7 +52,6 @@ async def main():
     dp.include_router(other_handlers.router)
     dp.include_router(database.router)
 
-
     # Настраиваем кнопку Menu
     await set_main_menu(bot)
 

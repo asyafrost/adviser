@@ -16,25 +16,25 @@ bot: Bot = Bot(token=config.tg_bot.token)
 dp: Dispatcher = Dispatcher()
 
 def connection(config: Config) -> pymysql.connect:
-    return pymysql.connect(host=config.db.db_host, 
+    return pymysql.connect(database=config.db.database, 
+                           host=config.db.db_host, 
                            user=config.db.db_user,
                            passwd=config.db.db_password, 
-                           database=config.db.database, 
-                           port=int(config.database.port),
+                           port=int(config.db.db_port),
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
 
 
-def addUser(msg: Message) -> bool:
-    name = msg.text
+def addUser(message: Message) -> bool:
     
-    print(name)
-    print(msg.from_id, msg.from_user.id)
+    
+    print(message.from_user.first_name)
+    print(message.message_id, message.from_user.id)
     con = connection(config)
     try:
         with con.cursor() as cursor:
             insert_query = f'INSERT INTO user (`user_id`, `name`, `age`, `type`, `genre`, `in_find`)'\
-            f'VALUES({msg.from_user.id}, "{name}", null, null, null, False);'
+            f'VALUES({message.from_user.id}, "{message.from_user.first_name}", null, null, null, False);'
             cursor.execute(insert_query)
             con.commit()
         return True
@@ -45,12 +45,32 @@ def addUser(msg: Message) -> bool:
         return False
     
         
+def haveUser(id: int) -> bool:
+
+    try:
+        con = connection(config)
+        with con.cursor() as cursor:
+            find_user = "SELECT * FROM user"\
+            f" WHERE user_id = {id}"
+            cursor.execute(find_user)
+            result = cursor.fetchone()
+            # if a row is returned, the user exists in the database
+            if result:
+                return True
+            else:
+                return False
+    except Exception as ex:
+        print(ex)
+        return False
+
+
+
 def SelectOneUser(msg: Message):
     try:
         con = connection(config)
         with con.cursor() as cursor:
             select_user = "SELECT * FROM user"\
-            f" WHERE idUser = {msg.from_user.id}"
+            f" WHERE user_id = {msg.from_user.id}"
             cursor.execute(select_user)
             return cursor.fetchone()
     except Exception as ex:
@@ -61,31 +81,31 @@ def UpdateUser(msg: Message, name: str = None, age: int = None, type: str = None
         con = connection(config)
         if name is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE users_game SET name = {name} WHERE user_id = {msg.from_user.id}"
+                update_user = f"UPDATE user SET name = {name} WHERE user_id = {msg.from_user.id}"
                 cursor.execute(update_user)
                 con.commit()
         
         if age is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE users_game SET age = {age} WHERE user_id = {msg.from_user.id}"
+                update_user = f"UPDATE user SET age = {age} WHERE user_id = {msg.from_user.id}"
                 cursor.execute(update_user)
                 con.commit()
         
         if type is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE users_game SET type = {type} WHERE user_id = {msg.from_user.id}"
+                update_user = f"UPDATE user SET type = '{type}' WHERE user_id = {msg.from_user.id}"
                 cursor.execute(update_user)
                 con.commit()
             
         if genre is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE users_game SET genre = {genre} WHERE user_id = {msg.from_user.id}"                    
+                update_user = f"UPDATE user SET genre = {genre} WHERE user_id = {msg.from_user.id}"                    
                 cursor.execute(update_user)
                 con.commit()
             
         if in_find is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE users_game SET in_find = {in_find} WHERE user_id = {msg.from_user.id}"
+                update_user = f"UPDATE user SET in_find = {in_find} WHERE user_id = {msg.from_user.id}"
                 cursor.execute(update_user)
                 con.commit()
     except Exception as ex:
