@@ -20,8 +20,8 @@ async def set_main_menu(bot: Bot):
                    description='Начать работу с ботом'),
         BotCommand(command='/help',
                    description='Справка по работе бота'),
-        BotCommand(command='/support',
-                   description='Поддержка'),
+        BotCommand(command='/menu',
+                   description='Вернуться в меню'),
         BotCommand(command='/authors',
                    description='Авторы бота')]
 

@@ -1,11 +1,15 @@
 import pymysql
+import os
+import requests
 from aiogram import Router
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher,  F
 import time
 from PIL import Image
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, URLInputFile
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from io import BytesIO
 from aiogram.types import Message
-
+import urllib.parse
 from config_data.config import Config, load_config
 
 config: Config = load_config('\.env')
@@ -76,18 +80,18 @@ def SelectOneUser(msg: Message):
     except Exception as ex:
         print(ex)
 
-def UpdateUser(msg: Message, name: str = None, age: int = None, type: str = None, genre: str = None, in_find: bool = None):
+async def UpdateUser(msg: Message, name: str = None, age: int = None, type: str = None, genre: str = None, in_find: bool = False):
     try:
         con = connection(config)
         if name is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE user SET name = {name} WHERE user_id = {msg.from_user.id}"
+                update_user = f"UPDATE user SET name = '{name}' WHERE user_id = {msg.from_user.id}"
                 cursor.execute(update_user)
                 con.commit()
         
         if age is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE user SET age = {age} WHERE user_id = {msg.from_user.id}"
+                update_user = f"UPDATE user SET age = '{age}' WHERE user_id = {msg.from_user.id}"
                 cursor.execute(update_user)
                 con.commit()
         
@@ -99,7 +103,7 @@ def UpdateUser(msg: Message, name: str = None, age: int = None, type: str = None
             
         if genre is not None:
             with con.cursor() as cursor:
-                update_user = f"UPDATE user SET genre = {genre} WHERE user_id = {msg.from_user.id}"                    
+                update_user = f"UPDATE user SET genre = '{genre}' WHERE user_id = {msg.from_user.id}"                    
                 cursor.execute(update_user)
                 con.commit()
             
@@ -112,30 +116,143 @@ def UpdateUser(msg: Message, name: str = None, age: int = None, type: str = None
         print(ex)
 
 
-def display_random_movie(msg: Message):
+async def display_random_atributs(msg: Message):
+    
+    con = connection(config)
+    with con.cursor() as cursor:
+        try:
+            cursor.execute(f"SELECT type FROM user WHERE user_id = {msg.from_user.id}")
+            type_user = cursor.fetchone()
+            
+
+            cursor.execute(f"SELECT age FROM user WHERE user_id = {msg.from_user.id}")
+            age_user = cursor.fetchone()
+
+            cursor.execute(f"SELECT genre FROM user WHERE user_id = {msg.from_user.id}")
+            genre_user = cursor.fetchone()
+
+            type = type_user['type']
+            age = age_user['age']
+            genre = genre_user['genre']
+
+            print(type, age, genre)
+
+            query = f"SELECT * FROM `{type}` WHERE age <= {age} AND genre = '{genre}' ORDER BY RAND() LIMIT 1"
+            cursor.execute(query)
+                    
+            result = cursor.fetchone()
+
+            query = f"UPDATE user SET find_id = {result['id']} WHERE user_id = {msg.from_user.id}"    
+            cursor.execute(query)
+            con.commit()
+                    
+
+        except KeyError:
+            print("The specified row does not exist.")
+
+    title :str = result['name']
+    year :int  = result['year']
+    description :str= result['description']
+    link :str= result['link']
+
+    message = f"{title} ({year})\n\n{description}\n\nСсылка: {link}"
+    print(message)
+    print(link)
+
+    try:
+        # получение url изображения из MySQL
+        image_blob = result['picture']
+        if image_blob is not None:
+            image = URLInputFile(f'{image_blob}')
+            print('Все ок')
+        else:
+            print('Image blob is None')
+    except Exception as ex:
+        print(ex)
+
+    
+
+    return image, message
+
+
+   
+
+async def UpdateRating(msg:Message, new_rating: int):
 
     con = connection(config)
     with con.cursor() as cursor:
-        cursor.execute("SELECT * FROM movie ORDER BY RAND() LIMIT 1")
-        movie = cursor.fetchone()
+        try:
+            cursor.execute(f"SELECT type, find_id FROM user WHERE user_id = {msg.from_user.id}")
+            find_object = cursor.fetchone()
 
-    cover = Image.open(BytesIO(movie[1]))
-    title = movie[2]
-    year = movie[3]
-    description = movie[5]
+            type_name = find_object['type']
+            res_id = find_object['find_id']
 
-    #print(f"Title: {title} ({year})")
-    #cover.show()
+            sql = f"SELECT rating, number_of_ratings FROM `{type_name}` WHERE id = {res_id}"
+            cursor.execute(sql)
+            new_result = cursor.fetchone()
 
-    with open(cover, 'rb') as photo_file:
-        bot.send_photo(photo=photo_file)
-    # Send the movie information
+            current_rating = new_result['rating']
+            number_of_ratings = new_result['number_of_ratings']
 
-    message = f"{title} ({year})\n{description}"
-    bot.send_message(text=message)
+            # Calculate the new average rating
+            new_average_rating = (current_rating * number_of_ratings + new_rating) / (number_of_ratings + 1)
 
+            # Update the database with the new average rating
+           
+            sql = f"UPDATE `{type_name}` SET rating = {new_average_rating}, number_of_ratings = {number_of_ratings + 1} WHERE id = {res_id}"
+            cursor.execute(sql)
 
+            
 
+        except KeyError:
+            print("The specified row does not exist.")
+
+        con.commit()
+
+            # Close the database connection
+        con.close()
+   
+'''
+#image_blob = urllib.parse.quote(image_blob)
+    response = requests.get(image_blob)
+    photo_file = BytesIO(response.content)
+    photo_file.name = 'image.jpeg' 
+    if os.path.exists('image.jpeg'):
+        os.remove('image.jpeg')
+
+    # создание временного файла с изображением
+    with open('image.jpeg', 'wb') as file:
+        file.write(image_blob)
+    
+    # проверка, что файл создан корректно
+    if os.path.exists('image.jpeg'):
+        print('File created successfully')
+        img = Image.open('image.jpeg')
+        width, height = img.size
+        print(f'Width: {width}, Height: {height}')
+
+    else:
+        print('Error creating file')
+    
+    
+    chat_id = msg.chat.id
+    file = FSInputFile("cat.png")
+  
+    with io.BytesIO(image_bytes) as file:
+        image = Image.open(file)
+
+         # Send photo to user
+        with io.BytesIO() as photo_file:
+            image.save(photo_file, 'JPG')
+            photo_file.seek(0)
+            await bot.send_photo(chat_id=msg.from_user.id, photo=photo_file)
+
+    with open(image_bytes, 'rb') as f:
+        img = Image.open(f)
+        img.show()
+
+ 
 
 def get_movie_info(movie_id):
     # Create a cursor object
@@ -154,7 +271,6 @@ def get_movie_info(movie_id):
 
     # Return the movie cover, title, and release year
     return result
-
 
 
 
@@ -255,3 +371,4 @@ def stringKD(msg: Message):
         print(ex)
     finally:
         return string
+        '''

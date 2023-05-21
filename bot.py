@@ -22,7 +22,7 @@ async def main():
        password=config.db.db_password,
        database=config.db.database,
        port=config.db.db_port,
-       charset='utf8mb4',
+       charset='utf8',
        cursorclass=pymysql.cursors.DictCursor
    )
 
@@ -30,7 +30,7 @@ async def main():
 #   cursor.execute("SELECT * FROM mytable")
 #   rows = cursor.fetchall()
 
-
+    
     # Инициализируем логгер
     logger = logging.getLogger(__name__)
 
@@ -62,6 +62,8 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+
+    
     
     
     

@@ -1,7 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
+from database import database
 from aiogram.filters import CommandStart
-
 from lexicon.lexicon_ru import LEXICON_RU
 
 # ------- Начальное меню -------
@@ -115,109 +115,46 @@ genres = genres_builder.as_markup(
 
 # ------- Клавиатура во время поиска -------
 
-# Создаем кнопки с ответами согласия и отказа
+# Создаем кнопки Другое и Закончить поиск
 button_other: KeyboardButton = KeyboardButton(text=LEXICON_RU['other'])
+button_rate: KeyboardButton = KeyboardButton(text=LEXICON_RU['rating'])
 button_end: KeyboardButton = KeyboardButton(text=LEXICON_RU['end'])
+
 
 find_builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
 
-find_builder.row(button_other, button_end, width=2)
+find_builder.row(button_rate,button_end, width=2)
+find_builder.row( button_other , width=1)
 
 find_kb = find_builder.as_markup(
                                 one_time_keyboard=True,
                                 resize_keyboard=True)
 
-'''
 
-# Кнопки жанра
+# Создаем кнопки с ответами согласия и отказа
 button_1: KeyboardButton = KeyboardButton(text=LEXICON_RU['rating_1'])
 button_2: KeyboardButton = KeyboardButton(text=LEXICON_RU['rating_2'])
 button_3: KeyboardButton = KeyboardButton(text=LEXICON_RU['rating_3'])
 button_4: KeyboardButton = KeyboardButton(text=LEXICON_RU['rating_4'])
 button_5: KeyboardButton = KeyboardButton(text=LEXICON_RU['rating_5'])
 
-genres_builder = ReplyKeyboardBuilder()
-genres_builder.row(button_1, button_2, button_3, width=2)
-genres_builder.row(button_4, button_5, width=2)
+# Инициализируем билдер для клавиатуры с кнопками "Да!" и "Не"
+rate_builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
 
-'''
+# Добавляем кнопки в билдер с параметром width=2
+rate_builder.row(button_1, button_2, button_3, width=3)
+rate_builder.row(button_4, button_5, width=2)
 
-# Создаем клавиатуру "
-genres = genres_builder.as_markup(
+# Создаем клавиатуру с кнопками "Да!" и "Не"
+rate_kb = rate_builder.as_markup(
                                 one_time_keyboard=True,
                                 resize_keyboard=True)
+
 
 
 #НАЙТИ, КАК ВСТАВИТЬ В СООБЩЕНИЕ ОТ БОТА
 
 
-url_object = 'aiogram_stepik_course'
-url_button_1: InlineKeyboardButton = InlineKeyboardButton(
-                                    text='Открыть в источнике',
-                                    url=f'{url_object}')
-
-rating_button: InlineKeyboardButton = InlineKeyboardButton(
-                                    text='Поставить оценку',
-                                    callback_data='rating_button_pressed'
-                                    #url=f'tg://user?id={user_id}'
-                                    )
-
-
-    
 
 
 
-LEXICON: dict[str, str] = {
-    'but_1': 'Оценка 1',
-    'but_2': 'Оценка 2',
-    'but_3': 'Оценка 3',
-    'but_4': 'Оценка 4',
-    'but_5': 'Оценка 5',
-    'but_6': 'Оценка 6',
-    'but_7': 'Оценка 7',
-    'but_8': 'Оценка 8',
-    'but_9': 'Оценка 9',
-    'but_10': 'Оценка 10',}
-
-BUTTONS: dict[str, str] = {
-    'btn_1': '1',
-    'btn_2': '2',
-    'btn_3': '3',
-    'btn_4': '4',
-    'btn_5': '5',
-    'btn_6': '6',
-    'btn_7': '7',
-    'btn_8': '8',
-    'btn_9': '9',
-    'btn_10': '10'}
-
-
-# Функция для генерации инлайн-клавиатур "на лету"
-def create_inline_kb(width: int,
-                     *args: str,
-                     **kwargs: str) -> InlineKeyboardMarkup:
-    # Инициализируем билдер
-    kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
-    # Инициализируем список для кнопок
-    buttons: list[InlineKeyboardButton] = []
-
-    # Заполняем список кнопками из аргументов args и kwargs
-    if args:
-        for button in args:
-            buttons.append(InlineKeyboardButton(
-                text=LEXICON[button] if button in LEXICON else button,
-                callback_data=button))
-    if kwargs:
-        for button, text in kwargs.items():
-            buttons.append(InlineKeyboardButton(
-                text=text,
-                callback_data=button))
-
-    # Распаковываем список с кнопками в билдер методом row c параметром width
-    kb_builder.row(*buttons, width=width)
-
-    # Возвращаем объект инлайн-клавиатуры
-    return kb_builder.as_markup()
-
-
-rate_keyboard = create_inline_kb(4, **BUTTONS)
