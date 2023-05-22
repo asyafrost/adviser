@@ -23,7 +23,7 @@ def _normalize_user_answer(user_answer: str) -> str:
 
 
 # Функция, определяющая победителя
-'''
+
 def get_winner(user_choice: str, bot_choice: str) -> str:
     user_choice = _normalize_user_answer(user_choice)
     rules: dict[str, str] = {'rock': 'scissors',
@@ -36,4 +36,5 @@ def get_winner(user_choice: str, bot_choice: str) -> str:
     else:
         return 'bot_won'
         
-    '''
+
+#def main_menu_commands()
